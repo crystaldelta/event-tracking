@@ -22,8 +22,8 @@ test.setup: ## install dependencies for running tests
 
 test: test.unit test.integration test.performance ## run all tests
 
-test.unit: test.setup ## run unit tests
-	nosetests --cover-erase --with-coverage --cover-branches -A 'not integration and not performance' --cover-min-percentage=95 --cover-package=eventtracking
+test.unit: test.setup
+	nosetests --cover-erase --with-coverage --cover-branches -A 'not integration and not performance' --cover-min-percentage=95 --cover-package=eventtracking --debug=DEFAULT
 
 test.integration: test.setup ## run integration tests
 	nosetests --verbose --nocapture -a 'integration'
