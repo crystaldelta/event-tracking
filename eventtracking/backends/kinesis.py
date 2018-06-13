@@ -3,19 +3,32 @@
 from __future__ import absolute_import
 
 try:
-    import boto
+    import boto3
 except ImportError:
-    boto = None
+    boto3 = None
 
+from datetime import datetime
+from datetime import date
+import json
 import logging
+
 log = logging.getLogger(__name__)
 
 class KinesisBackend(object):
 
-    # def __init__(self):
-    #     if boto is None:
-    #         log.error('boto not loaded')
-    #         return
+    def __init__(self, **kwargs):
+
+        """
+        Event tracker backend that uses a Kinesis Stream
+
+        `streamName` is the stream to send the events to
+        """
+        if boto3 is None:
+            log.error('boto not loaded')
+            return
+
+        self.streamName = kwargs.get('streamName', None)
+        self.kinesis = boto3.client('kinesis')
 
     """
     Send events to an AWS Kinesis Stream
@@ -33,8 +46,8 @@ class KinesisBackend(object):
     """
 
     def send(self, event):
-        if boto is None:
-            log.debug('boto not loaded')
+        if boto3 is None:
+            log.error('boto not loaded')
             return
 
         # validate
@@ -43,13 +56,39 @@ class KinesisBackend(object):
         name = event.get('name')
         if name is None or user_id is None:
             log.error('Ignoring Event:')
-            log.debug(event)
             return
 
-        data = boto.utils.get_instance_identity()
-        region_name = data['document']['region']
+        log.error(event)
+        kinesisData = {
+            'Data': json.dumps(event, cls=DateTimeJSONEncoder),
+            'PartitionKey': 'shardId-000000000000'
+        }
 
-        self.kinesis = boto.kinesis.connect_to_region(region_name)
+        log.error(kinesisData)
+        log.error(self.streamName)
 
-        # send!!
-        self.kinesis.put_records([ event ], "BotoDemo")
+        self.kinesis.put_records(Records=[ kinesisData ], StreamName=self.streamName)
+
+
+class DateTimeJSONEncoder(json.JSONEncoder):
+    """JSON encoder aware of datetime.datetime and datetime.date objects"""
+
+    def default(self, obj):  # lint-amnesty, pylint: disable=arguments-differ, method-hidden
+        """
+        Serialize datetime and date objects of iso format.
+
+        datatime objects are converted to UTC.
+        """
+
+        if isinstance(obj, datetime):
+            if obj.tzinfo is None:
+                # Localize to UTC naive datetime objects
+                obj = UTC.localize(obj)  # pylint: disable=no-value-for-parameter
+            else:
+                # Convert to UTC datetime objects from other timezones
+                obj = obj.astimezone(UTC)
+            return obj.isoformat()
+        elif isinstance(obj, date):
+            return obj.isoformat()
+
+        return super(DateTimeJSONEncoder, self).default(obj)
