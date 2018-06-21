@@ -11,6 +11,7 @@ from datetime import datetime
 from datetime import date
 import json
 import logging
+from pytz import utc as UTC
 
 log = logging.getLogger(__name__)
 
