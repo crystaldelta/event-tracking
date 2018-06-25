@@ -7,8 +7,8 @@ try:
 except ImportError:
     boto3 = None
 
-from datetime import datetime
-from datetime import date
+from datetime import datetime, date
+from pytz import UTC
 import json
 import logging
 
