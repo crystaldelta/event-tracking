@@ -21,7 +21,7 @@ class KinesisBackend(object):
         """
 
         self.streamName = kwargs.get('streamName', None)
-        self.regionName = kwarge.get('regionName', None)
+        self.regionName = kwargs.get('regionName', None)
         self.kinesis = kinesis.connect_to_region(self.regionName)
 
     """
