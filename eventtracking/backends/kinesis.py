@@ -22,7 +22,7 @@ class KinesisBackend(object):
 
         self.streamName = kwargs.get('streamName', None)
         self.regionName = kwargs.get('regionName', None)
-        self.kinesis = kinesis.connect_to_region(self.regionName)
+        self.kinesis = kinesis.connect_to_region(region_name = self.regionName)
 
     """
     Send events to an AWS Kinesis Stream
@@ -57,7 +57,7 @@ class KinesisBackend(object):
         log.info(kinesisData)
         log.info(self.streamName)
 
-        self.kinesis.put_record([ kinesisData ], self.streamName)
+        self.kinesis.put_records([ kinesisData ], self.streamName)
 
 
 class DateTimeJSONEncoder(json.JSONEncoder):
