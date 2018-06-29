@@ -45,17 +45,16 @@ class KinesisBackend(object):
         user_id = context.get('user_id')
         name = event.get('name')
         if name is None or user_id is None:
-            log.info('Ignoring Event:')
+            log.info('There is no event name and user id in the event.')
             return
 
-        log.info(event)
         kinesisData = {
             'Data': json.dumps(event, cls=DateTimeJSONEncoder),
             'PartitionKey': 'shardId-000000000000'
         }
 
-        log.info(kinesisData)
-        log.info(self.streamName)
+        log.info('Kinesis Data : %s ', kinesisData)
+        log.info('Stream Name : %s ', self.streamName)
 
         self.kinesis.put_records([ kinesisData ], self.streamName)
 
